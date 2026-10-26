@@ -165,49 +165,78 @@
             pointer-events: none;
         }
 
-        /* BOTÓN FLOTANTE DE MÚSICA */
-        .music-float-btn {
+        /* BOTÓN FLOTANTE DE MÚSICA ESTILO PRIMER CÓDIGO */
+        #play-music {
             position: fixed;
             bottom: 25px;
             right: 25px;
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #f3e6ed 0%, #e2c2d0 100%);
-            border: 2px solid #582136;
-            border-radius: 50%;
             display: flex;
-            justify-content: center;
             align-items: center;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(88, 33, 54, 0.3);
-            z-index: 9998;
-            transition: transform 0.3s ease, background-color 0.3s ease;
-            outline: none;
-        }
-
-        .music-float-btn:hover {
-            transform: scale(1.1);
-            background-color: #582136;
-        }
-
-        .music-float-btn span {
-            font-size: 1.3rem;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px 16px;
+            background-color: rgba(243, 230, 237, 0.95);
             color: #582136;
+            border: 2px solid #582136;
+            border-radius: 30px;
+            backdrop-filter: blur(8px);
+            cursor: pointer;
+            font-size: 13px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(88, 33, 54, 0.3);
+            overflow: hidden;
+            z-index: 9998;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
-        .music-float-btn:hover span {
+        #play-music:hover {
+            background-color: #582136;
             color: #ffffff;
+            transform: scale(1.05);
         }
 
-        /* Animación sutil cuando está reproduciendo */
-        @keyframes pulse-music {
-            0% { box-shadow: 0 0 0 0 rgba(88, 33, 54, 0.4); }
-            70% { box-shadow: 0 0 0 12px rgba(88, 33, 54, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(88, 33, 54, 0); }
+        #play-music.playing {
+            background-color: #582136;
+            color: #ffffff;
+            border-color: #582136;
         }
 
-        .music-float-btn.playing {
-            animation: pulse-music 2s infinite;
+        #visualizer {
+            display: none;
+            align-items: flex-end;
+            gap: 3px;
+            height: 16px;
+        }
+
+        .bar {
+            width: 3px;
+            height: 14px;
+            background: #582136;
+            border-radius: 3px;
+            transform-origin: bottom;
+            transform: scaleY(1);
+            animation: wave 1.5s infinite ease-in-out;
+            opacity: 0.9;
+        }
+
+        #play-music.playing .bar {
+            background: #ffffff;
+        }
+
+        .bar:nth-child(1) { animation-delay: 0s; }
+        .bar:nth-child(2) { animation-delay: 0.1s; }
+        .bar:nth-child(3) { animation-delay: 0.2s; }
+        .bar:nth-child(4) { animation-delay: 0.3s; }
+        .bar:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(1); }
+            50%      { transform: scaleY(1.8); }
         }
 
         /* ===================================================
@@ -1058,15 +1087,19 @@
 </head>
 <body>
 
-    <!-- ELEMENTO DE AUDIO DE FONDO -->
-    <!-- ⚠️ CAMBIA "tu-cancion.mp3" POR EL NOMBRE O ENLACE DIRECTO DE TU ARCHIVO DE AUDIO -->
-    <audio id="bgMusic" loop preload="auto">
-<source src="Cinderella-Eme-Malafre_-Video-Oficial_-Eme-Malafre-_128k_.mp3" type="audio/mpeg">        Tu navegador no soporta el elemento de audio.
-    </audio>
+    <!-- ELEMENTO DE AUDIO CON LA PIEZA EXACTA DEL PRIMER CÓDIGO -->
+    <audio id="audio" src="https://invitacion-de-xv.com/wp-content/uploads/2026/05/dancing-queen-abba-lyrics-sub.-espanol-mamma-mia.mp3" preload="auto" loop></audio>
 
-    <!-- BOTÓN FLOTANTE PARA PAUSAR / REPRODUCIR MÚSICA -->
-    <button class="music-float-btn" id="musicToggleBtn" title="Pausar / Reproducir Música">
-        <span id="musicIcon">&#127925;</span>
+    <!-- BOTÓN FLOTANTE CON EL VISUALIZADOR ANIMADO DEL PRIMER CÓDIGO -->
+    <button id="play-music">
+      <span id="button-text">Reproducir</span>
+      <span id="visualizer">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </span>
     </button>
 
     <!-- MODAL POPUP DE BIENVENIDA -->
@@ -1388,36 +1421,105 @@
     </main>
 
     <script>
-        // Lógica de Audio y Reproductor
-        const bgMusic = document.getElementById('bgMusic');
-        const musicToggleBtn = document.getElementById('musicToggleBtn');
-        const musicIcon = document.getElementById('musicIcon');
-
-        // 1. Ocultar popup, reproducir música y activar botón al hacer clic en ENTRAR
-        document.getElementById('btnEntrar').addEventListener('click', function() {
-            document.getElementById('welcomePopup').classList.add('hidden');
-            
-            // Reproducir la canción
-            bgMusic.play().then(() => {
-                musicToggleBtn.classList.add('playing');
-                musicIcon.innerHTML = '&#128266;'; // Icono de bocina con sonido
-            }).catch(error => {
-                console.log("Error al reproducir audio automáticamente:", error);
-            });
-        });
-
-        // 2. Control manual de pausa / reproducción con el botón flotante
-        musicToggleBtn.addEventListener('click', function() {
-            if (bgMusic.paused) {
-                bgMusic.play();
-                musicToggleBtn.classList.add('playing');
-                musicIcon.innerHTML = '&#128266;';
+    document.addEventListener('DOMContentLoaded', function() {
+        const audio = document.getElementById('audio');
+        const button = document.getElementById('play-music');
+        const visualizer = document.getElementById('visualizer');
+        const buttonText = document.getElementById('button-text');
+        const welcomePopup = document.getElementById('welcomePopup');
+        const btnEntrar = document.getElementById('btnEntrar');
+        
+        let userHasTakenControl = false; 
+        let autoplayCompleted = false; 
+        let autoplayAttempted = false;
+        
+        function updateButtonState(isPlaying) {
+            if (isPlaying) {
+                buttonText.innerText = 'Detener';
+                button.classList.add('playing');
+                visualizer.style.display = 'flex';
             } else {
-                bgMusic.pause();
-                musicToggleBtn.classList.remove('playing');
-                musicIcon.innerHTML = '&#128263;'; // Icono de bocina silenciada
+                buttonText.innerText = 'Reproducir';
+                button.classList.remove('playing');
+                visualizer.style.display = 'none';
+            }
+        }
+        
+        function attemptUniqueAutoplay() {
+            if (autoplayCompleted || autoplayAttempted || userHasTakenControl) {
+                return;
+            }
+            
+            if (audio.paused) {
+                autoplayAttempted = true; 
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        autoplayCompleted = true;
+                        updateButtonState(true);
+                    }).catch(error => {
+                        autoplayAttempted = false;
+                    });
+                }
+            }
+        }
+
+        // Al hacer clic en ENTRAR se oculta el popup e intenta iniciar la música
+        btnEntrar.addEventListener('click', function() {
+            welcomePopup.classList.add('hidden');
+            userHasTakenControl = true;
+            
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    updateButtonState(true);
+                }).catch(error => {
+                    updateButtonState(false);
+                });
             }
         });
+
+        // Control manual desde el botón flotante
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            userHasTakenControl = true;
+            
+            if (audio.paused) {
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        updateButtonState(true);
+                    }).catch(error => {
+                        buttonText.innerText = 'Error';
+                        setTimeout(() => {
+                            updateButtonState(false);
+                        }, 2000);
+                    });
+                }
+            } else {
+                audio.pause();
+                updateButtonState(false);
+            }
+        });
+        
+        audio.addEventListener('ended', () => { updateButtonState(false); });
+        audio.addEventListener('play', () => { updateButtonState(true); });
+        audio.addEventListener('pause', () => {
+            if (!audio.ended) { updateButtonState(false); }
+        });
+
+        // Interceptar toques/clics globales para facilitar la reproducción automática permitida por navegadores móviles
+        ['touchstart', 'touchend', 'click', 'mousedown'].forEach(eventType => {
+            document.addEventListener(eventType, function() {
+                if (!autoplayCompleted && !autoplayAttempted && !userHasTakenControl && audio.paused) {
+                    setTimeout(attemptUniqueAutoplay, 100);
+                }
+            }, { passive: true, capture: true });
+        });
+        
+        if (audio.readyState < 3) {
+            audio.load();
+        }
 
         // 3. Transición automática de la galería principal
         const slides = document.querySelectorAll('.gallery-slider .slide-item');
@@ -1448,22 +1550,24 @@
             dots[currentManualIndex].classList.add('active');
         }
 
-        nextBtn.addEventListener('click', () => {
-            currentManualIndex++;
-            showManualSlide(currentManualIndex);
-        });
-
-        prevBtn.addEventListener('click', () => {
-            currentManualIndex--;
-            showManualSlide(currentManualIndex);
-        });
-
-        dots.forEach((dot, idx) => {
-            dot.addEventListener('click', () => {
-                currentManualIndex = idx;
+        if(nextBtn && prevBtn) {
+            nextBtn.addEventListener('click', () => {
+                currentManualIndex++;
                 showManualSlide(currentManualIndex);
             });
-        });
+
+            prevBtn.addEventListener('click', () => {
+                currentManualIndex--;
+                showManualSlide(currentManualIndex);
+            });
+
+            dots.forEach((dot, idx) => {
+                dot.addEventListener('click', () => {
+                    currentManualIndex = idx;
+                    showManualSlide(currentManualIndex);
+                });
+            });
+        }
 
         // 5. Cronómetro en tiempo real para el 22 de Agosto de 2026
         const targetDate = new Date("august 22, 2026 20:30:00").getTime();
@@ -1494,7 +1598,7 @@
         updateCountdown();
 
         // 6. Función para enviar los datos del formulario directamente a WhatsApp
-        function enviarWhatsApp() {
+        window.enviarWhatsApp = function() {
             const nombreFamilia = document.getElementById('nombreFamilia').value.trim();
             if(!nombreFamilia) {
                 alert('Por favor escribe el nombre y apellido de tu familia.');
@@ -1507,7 +1611,7 @@
             const nombresAsistentes = document.getElementById('nombresAsistentes').value.trim();
             const dedicatoria = document.getElementById('dedicatoria').value.trim();
 
-            const numeroWhatsApp = "5521045433"; // Reemplaza con tu número de WhatsApp
+            const numeroWhatsApp = "5521045433";
 
             const mensaje = `*Confirmación de Asistencia - XV Años de Vane*%0A%0A` +
                             `*Familia / Invitado:* ${nombreFamilia}%0A` +
@@ -1518,38 +1622,16 @@
 
             const url = `https://wa.me/${numeroWhatsApp}?text=${mensaje}`;
             window.open(url, '_blank');
-        }
-
-        // 7. Observador de scroll para activar la aparición gradual
-        const observerOptions = {
-            threshold: 0.15
         };
 
-        const observer = new IntersectionObserver((entries, observer) => {
+        // 7. Observador de scroll para activar la aparición gradual
+        const observerOptions = { threshold: 0.15 };
+
+        const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
-                    
-                    const lines = entry.target.querySelectorAll('.scroll-line');
-                    lines.forEach(line => line.classList.add('visible'));
-
-                    const famItems = entry.target.querySelectorAll('[class*="scroll-fam-"]');
-                    famItems.forEach(item => item.classList.add('visible'));
-
-                    const locItems = entry.target.querySelectorAll('[class*="scroll-loc-"]');
-                    locItems.forEach(item => item.classList.add('visible'));
-
-                    const dressItems = entry.target.querySelectorAll('[class*="scroll-dress-"]');
-                    dressItems.forEach(item => item.classList.add('visible'));
-
-                    const giftItems = entry.target.querySelectorAll('[class*="scroll-gift-"]');
-                    giftItems.forEach(item => item.classList.add('visible'));
-
-                    const momentItems = entry.target.querySelectorAll('[class*="scroll-moments-"]');
-                    momentItems.forEach(item => item.classList.add('theme'));
-
-                    const rsvpItems = entry.target.querySelectorAll('[class*="scroll-rsvp-"]');
-                    rsvpItems.forEach(item => item.classList.add('visible'));
+                    entry.target.querySelectorAll('.scroll-line, [class*="scroll-fam-"], [class*="scroll-loc-"], [class*="scroll-dress-"], [class*="scroll-gift-"], [class*="scroll-moments-"], [class*="scroll-rsvp-"]').forEach(item => item.classList.add('visible'));
                 }
             });
         }, observerOptions);
@@ -1557,6 +1639,7 @@
         document.querySelectorAll('.reveal-section').forEach(section => {
             observer.observe(section);
         });
+    });
     </script>
 
 </body>
